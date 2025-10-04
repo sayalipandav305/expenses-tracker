@@ -1,0 +1,44 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+env/
+venv/
+ENV/
+.venv/
+
+# Flask instance folder
+instance/
+*.db
+
+# SQLite database
+*.sqlite3
+
+# Environment variables
+.env
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Uploaded receipts
+static/uploads/
+
+# Logs
+*.log
+
+# Byte-compiled / cache
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
