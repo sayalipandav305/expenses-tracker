@@ -1,259 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Expense Tracker</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <style>
-    :root {
-      --bg: #f5f6fa;
-      --card-bg: #ffffff;
-      --text-color: #333;
-      --primary: #4a90e2;
-      --secondary: #7f8c8d;
-      --success: #28a745;
-      --warning: #ffc107;
-      --danger: #dc3545;
-    }
-    body.dark-mode {
-      --bg: #121212;
-      --card-bg: #1e1e1e;
-      --text-color: #eee;
-      --primary: #4a90e2;
-      --secondary: #ccc;
-    }
-    body { background: var(--bg); color: var(--text-color); }
-    .card { background: var(--card-bg); border-radius: 0.6rem; }
-    .navbar { background: var(--primary) !important; border-radius: 0.4rem; }
-    .progress-bar { background: var(--primary); }
-    .table thead { background-color: var(--primary); color: #fff; }
-    .btn { border-radius: 0.4rem; }
-    .alert { border-radius: 0.5rem; }
-  </style>
+<meta charset="UTF-8">
+<title>Expense Tracker Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: #f4f5f7;
+    margin: 0; padding: 0;
+}
+.container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px 30px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 40px rgba(0,0,0,0.1);
+}
+h1 { font-size: 1.6rem; margin-bottom: 20px; color: #333; }
+
+.dashboard-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px;
+}
+.dashboard-nav { display: flex; gap: 25px; font-size: 1rem; color: #6c757d; align-items: center; }
+.dashboard-nav .active { color: #222; font-weight: bold; }
+
+.stats-cards { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 25px; }
+.stats-card { flex: 1; min-width: 150px; background: #f9fafc; border-radius: 14px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
+.stats-card-title { font-size: 0.9rem; color: #617187; margin-bottom: 5px; }
+.stats-card-value { font-size: 1.4rem; color: #282828; font-weight: bold; }
+
+.budget-section { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+.budget-section input { padding: 7px 12px; border-radius: 6px; border: 1px solid #ccc; }
+.budget-section button { background: #39a2ff; color: #fff; border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; }
+
+.main-content { display: flex; gap: 25px; flex-wrap: wrap; }
+.left-column { flex: 1; min-width: 320px; }
+.right-column { flex: 2; min-width: 550px; }
+
+.card { background: #fff; border-radius: 14px; padding: 20px; margin-bottom: 25px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
+
+input, select { width: 100%; padding: 8px 12px; margin-bottom: 12px; border-radius: 6px; border: 1px solid #ddd; }
+button { cursor: pointer; }
+
+.expenses-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.expenses-table th, .expenses-table td { padding: 10px; text-align: left; }
+.expenses-table th { background: #f5f6fa; color: #555; }
+.expenses-table td { border-bottom: 1px solid #e0e0e0; }
+.delete-btn { background: none; border: none; color: #ff4c4c; cursor: pointer; }
+
+.chart-container { width: 100%; height: 300px; }
+
+@media (max-width: 900px) { .main-content { flex-direction: column; } }
+</style>
 </head>
 <body>
-
-<nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4">
-  <div class="container">
-    <a class="navbar-brand" href="#">Expense Tracker</a>
-    <div class="d-flex align-items-center">
-      <span class="navbar-text me-3">Hi, {{ username }}</span>
-
-      <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Logout</a>
-    </div>
-  </div>
-</nav>
-
 <div class="container">
-  
-  <!-- Alerts -->
-  {% if alert %}
-    <div class="alert alert-warning">{{ alert }}</div>
-  {% endif %}
-  <!-- Notifications Toast -->
-<div aria-live="polite" aria-atomic="true" class="position-relative">
-  <div class="toast-container position-fixed top-0 end-0 p-3">
-    {% for note in notifications %}
-      <div class="toast align-items-center text-bg-warning border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-          <div class="toast-body">
-            {{ note.message }}
-          </div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-      </div>
-    {% endfor %}
-  </div>
+    <h1>Expense Tracker Dashboard</h1>
+
+  <div class="dashboard-header">
+    <span style="font-weight:bold;">Finance Tracker</span>
+    <div style="display:flex; align-items:center; gap:15px;">
+        <span>Hi, {{ username }}</span>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Logout</a>
+    </div>
 </div>
 
-  <!-- Summary Cards -->
-  <div class="row mb-4">
-    <div class="col-md-3 mb-3">
-      <div class="card shadow-sm p-3 text-center">
-        <h6>Total Expenses</h6>
-        <p class="fs-5">{{ currency }}{{ total_expense }}</p>
-      </div>
-    </div>
-    <div class="col-md-3 mb-3">
-      <div class="card shadow-sm p-3 text-center">
-        <h6>Number of Expenses</h6>
-        <p class="fs-5">{{ num_expenses }}</p>
-      </div>
-    </div>
-    <div class="col-md-3 mb-3">
-      <div class="card shadow-sm p-3 text-center">
-        <h6>Highest Category</h6>
-        <p class="fs-6">{{ highest_category }} ({{ currency }}{{ highest_total }})</p>
-      </div>
-    </div>
-    <div class="col-md-3 mb-3">
-  <div class="card shadow-sm p-3 text-center">
-    <h6>Set Budget</h6>
-    <form action="{{ url_for('set_budget') }}" method="POST" class="d-flex gap-2">
-      <input type="number" step="0.01" name="budget" class="form-control" placeholder="Enter budget" required>
-      <button class="btn btn-primary btn-sm">Set</button>
-    </form>
-    <small class="text-muted">Current: {{ currency }}{{ budget|default(0) }}</small>
-  </div>
-</div>
 
-    <div class="col-md-3 mb-3">
-      <div class="card shadow-sm p-3">
-        <h6>Budget</h6>
-        <div class="progress mb-1">
-          <div class="progress-bar" role="progressbar"
-               style="width: {{ (total_expense/budget*100)|default(0) if budget else 0 }}%;"
-               aria-valuenow="{{ total_expense }}"
-               aria-valuemin="0"
-               aria-valuemax="{{ budget|default(1) }}">
-            {{ ((total_expense/budget*100)|default(0) if budget else 0)|round(1) }}%
-          </div>
-        </div>
-        <small>{{ currency }}{{ total_expense }}/{{ currency }}{{ budget|default(0) }}</small>
-      </div>
-    </div>
-  </div>
-
-  <!-- Filter/Search -->
-  <div class="row mb-4">
-    <div class="col-md-12">
-      <form method="GET" class="row g-2">
-        <div class="col-md-3"><input type="text" name="search" class="form-control" placeholder="Search description"></div>
-        <div class="col-md-2">
-          <select name="category" class="form-select">
-            <option value="">All Categories</option>
-            <option value="Food">Food</option>
-            <option value="Transport">Transport</option>
-            <option value="Shopping">Shopping</option>
-            <option value="Bills">Bills</option>
-            <option value="Entertainment">Entertainment</option>
-            <option value="Health">Health</option>
-            <option value="Others">Others</option>
-          </select>
-        </div>
-        <div class="col-md-2"><input type="date" name="from" class="form-control"></div>
-        <div class="col-md-2"><input type="date" name="to" class="form-control"></div>
-        <div class="col-md-3"><button class="btn btn-primary w-100">Filter</button></div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Add Expense + Table -->
-  <div class="row mb-4">
-    <div class="col-md-4 mb-3">
-      <div class="card shadow-sm p-3">
-        <h6>Add Expense</h6>
-        <form action="{{ url_for('add_expense') }}" method="post">
-          <input type="number" step="0.01" name="amount" class="form-control mb-2" placeholder="Amount" required>
-          <select name="category" class="form-select mb-2" required>
-            <option value="" disabled selected>Select Category</option>
-            <option value="Food">Food</option>
-            <option value="Transport">Transport</option>
-            <option value="Shopping">Shopping</option>
-            <option value="Bills">Bills</option>
-            <option value="Entertainment">Entertainment</option>
-            <option value="Health">Health</option>
-            <option value="Others">Others</option>
-          </select>
-          <input type="text" name="description" class="form-control mb-2" placeholder="Description">
-          <input type="date" name="date" class="form-control mb-2" required>
-          <div class="mb-2 d-flex align-items-center gap-2">
-            <input type="checkbox" name="recurring"> Recurring
-            <select name="frequency" class="form-select">
-              <option value="monthly">Monthly</option>
-              <option value="weekly">Weekly</option>
-            </select>
-          </div>
-          <button class="btn btn-success w-100">Add Expense</button>
+    <!-- Budget Section -->
+    <div class="budget-section">
+        <form action="{{ url_for('set_budget') }}" method="POST" style="display:flex; gap:10px; flex-wrap: wrap;">
+            <input type="number" step="0.01" name="budget" placeholder="Set Budget" required>
+            <button type="submit">Set Budget</button>
         </form>
-      </div>
+        <span>Current Budget: {{ currency }}{{ budget|default(0) }}</span>
     </div>
 
-    <div class="col-md-8 mb-3">
-      <div class="card shadow-sm p-3">
-        <h6>Your Expenses</h6>
-        <div class="table-responsive">
-          <table class="table table-striped table-hover">
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Amount</th>
-                <th>Description</th>
-                <th>Date</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for exp in expenses %}
-                <tr>
-                  <td>{{ exp.category }}</td>
-                  <td>{{ currency }}{{ exp.amount }}</td>
-                  <td>{{ exp.description }}</td>
-                  <td>{{ exp.date.strftime("%Y-%m-%d") }}</td>
-                  <td><a href="{{ url_for('delete_expense', id=exp['_id']) }}" class="btn btn-sm btn-danger">Delete</a></td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+    <!-- Stats Cards -->
+    <div class="stats-cards">
+        <div class="stats-card">
+            <div class="stats-card-title">Total Expenses</div>
+            <div class="stats-card-value">{{ currency }}{{ total_expense }}</div>
         </div>
-      </div>
+        <div class="stats-card">
+            <div class="stats-card-title">Number of Expenses</div>
+            <div class="stats-card-value">{{ num_expenses }}</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-card-title">Highest Category</div>
+            <div class="stats-card-value">{{ highest_category }}</div>
+        </div>
     </div>
-  </div>
 
-  <!-- Pie Chart -->
-  <div class="row mb-4">
-    <div class="col-md-6">
-      <div class="card shadow-sm p-3">
-        <h6>Spending by Category</h6>
-        <canvas id="expenseChart"></canvas>
-      </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Left Column: Add Expense & Filter -->
+        <div class="left-column">
+            <div class="card">
+                <h3>Add Expense</h3>
+                <form action="{{ url_for('add_expense') }}" method="POST" enctype="multipart/form-data">
+                    <input type="number" step="0.01" name="amount" placeholder="Amount" required>
+                    <select name="category" required>
+                        <option value="" disabled selected>Select Category</option>
+                        <option value="Food">Food</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Bills">Bills</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Health">Health</option>
+                        <option value="Others">Others</option>
+                    </select>
+                    <input type="text" name="description" placeholder="Description">
+                    <input type="date" name="date" required>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <input type="checkbox" name="recurring"> Recurring
+                        <select name="frequency">
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                    <input type="file" name="receipt">
+                    <button type="submit" style="background:#39a2ff;color:white;">Add Expense</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Filter Expenses</h3>
+                <form method="GET" action="{{ url_for('dashboard') }}">
+                    <input type="text" name="search" placeholder="Search description" value="{{ search or '' }}">
+                    <select name="category">
+                        <option value="">All Categories</option>
+                        <option value="Food" {% if category=="Food" %}selected{% endif %}>Food</option>
+                        <option value="Transport" {% if category=="Transport" %}selected{% endif %}>Transport</option>
+                        <option value="Shopping" {% if category=="Shopping" %}selected{% endif %}>Shopping</option>
+                        <option value="Bills" {% if category=="Bills" %}selected{% endif %}>Bills</option>
+                        <option value="Entertainment" {% if category=="Entertainment" %}selected{% endif %}>Entertainment</option>
+                    </select>
+                    <input type="date" name="from" value="{{ from_date or '' }}">
+                    <input type="date" name="to" value="{{ to_date or '' }}">
+                    <button type="submit" style="background:#39a2ff;color:white;">Filter</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Clear</a>
+                    <a href="{{ url_for('export_csv') }}" class="btn btn-success">Export CSV</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Column: Table & Chart -->
+        <div class="right-column">
+            <div class="card">
+                <h3>Expenses</h3>
+                <div style="overflow-x:auto;">
+                    <table class="expenses-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Recurring</th>
+                                <th>Receipt</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for exp in expenses %}
+                            <tr {% if budget>0 and total_expense>budget %}style="background:#ffe5e5"{% endif %}>
+                                <td>{{ exp.date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ exp.description }}</td>
+                                <td>{{ exp.category }}</td>
+                                <td>{{ currency }}{{ exp.amount }}</td>
+                                <td>{{ 'Yes' if exp.recurring else 'No' }}</td>
+                                <td>
+                                    {% if exp.receipt %}
+                                        <a href="{{ url_for('static', filename='uploads/' ~ exp.receipt) }}" target="_blank">View</a>
+                                    {% else %}N/A{% endif %}
+                                </td>
+                                <td>
+                                    <button class="delete-btn" data-id="{{ exp['_id'] }}">Delete</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Spending by Category</h3>
+                <canvas id="expenseChart" class="chart-container"></canvas>
+            </div>
+        </div>
     </div>
-  </div>
-
 </div>
 
-<script>
-  // Chart
-  fetch('{{ url_for("totals") }}')
-    .then(res => res.json())
-    .then(data => {
-      const labels = data.map(i => i._id);
-      const totals = data.map(i => i.total);
-      new Chart(document.getElementById('expenseChart').getContext('2d'), {
-        type: 'pie',
-        data: {
-          labels: labels,
-          datasets: [{
-            data: totals,
-            backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40'],
-            borderColor: '#fff',
-            borderWidth: 1
-          }]
-        },
-        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-      });
-    });
-
-  // Dark/Light mode toggle
-  document.getElementById("toggleTheme").onclick = () => {
-    document.body.classList.toggle("dark-mode");
-  }
-</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // Show all toasts on page load
-  window.addEventListener('DOMContentLoaded', () => {
-    const toastElList = [].slice.call(document.querySelectorAll('.toast'))
-    const toastList = toastElList.map(function (toastEl) {
-      return new bootstrap.Toast(toastEl, { delay: 5000 })
+fetch('{{ url_for("totals") }}')
+.then(res => res.json())
+.then(data => {
+    const labels = data.map(i => i._id);
+    const totals = data.map(i => i.total);
+    new Chart(document.getElementById('expenseChart').getContext('2d'), {
+        type: 'pie',
+        data: { labels, datasets:[{data:totals, backgroundColor:['#2573ec','#f6ae35','#2ac99c','#eb5858','#8e44ad','#e67e22']}]},
+        options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } }
     });
-    toastList.forEach(toast => toast.show());
-  });
-</script>
+});
 
+// AJAX delete
+document.querySelectorAll('.delete-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+        const expId=btn.dataset.id;
+        if(confirm('Are you sure you want to delete this expense?')){
+            fetch(`/delete/${expId}`,{method:'DELETE'})
+            .then(res=>res.json())
+            .then(data=>{
+                if(data.success){ btn.closest('tr').remove(); }
+                else{ alert('Failed to delete expense'); }
+            });
+        }
+    });
+});
+</script>
 </body>
 </html>
-

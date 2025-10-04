@@ -1,0 +1,101 @@
+/* General */
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text-color);
+  transition: background 0.3s, color 0.3s;
+}
+
+h6 {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+a {
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+/* Navbar */
+.navbar {
+  border-radius: 0.5rem;
+  transition: background 0.3s;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+/* Cards */
+.card {
+  border: none;
+  border-radius: 0.8rem;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+  transition: background 0.3s, color 0.3s;
+}
+
+.card h6 {
+  font-size: 0.95rem;
+  color: var(--secondary);
+}
+
+/* Buttons */
+.btn {
+  font-weight: 500;
+  border-radius: 0.5rem;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Table */
+.table {
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+
+.table thead {
+  font-weight: 600;
+}
+
+.table-hover tbody tr:hover {
+  background: rgba(74, 144, 226, 0.1);
+  cursor: pointer;
+}
+
+/* Progress Bar */
+.progress {
+  height: 0.9rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Alerts */
+.alert {
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+}
+
+/* Toasts */
+.toast {
+  font-size: 0.9rem;
+  border-radius: 0.5rem;
+}
+
+/* Dark mode extras */
+body.dark-mode .card {
+  box-shadow: 0 2px 5px rgba(0,0,0,0.6);
+}
+
+body.dark-mode .table-hover tbody tr:hover {
+  background: rgba(255,255,255,0.05);
+}
