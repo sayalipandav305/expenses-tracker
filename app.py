@@ -1,13 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response
-from flask_bcrypt import Bcrypt
 from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime, timedelta
 import os
+import openai
+from dotenv import load_dotenv
+
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__)
 app.secret_key = "supersecret"
-bcrypt = Bcrypt(app)
 
 # ---------------- MongoDB Setup ---------------- #
 client = MongoClient("mongodb://localhost:27017/")
@@ -20,53 +23,38 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # ---------------- ROUTES ---------------- #
 
+# Google login page
+@app.route("/login")
+def login_page():
+    return render_template("signup.html")  # your Google login page
+
+# Home redirects to login
 @app.route("/")
 def home():
     return redirect(url_for("login_page"))
 
-@app.route("/login_page")
-def login_page():
-    return render_template("login.html")
+# Google login route
+@app.route("/login-with-google", methods=["POST"])
+def login_with_google():
+    data = request.json
+    email = data.get("email")
+    username = data.get("name")
 
-@app.route("/signup_page")
-def signup_page():
-    return render_template("signup.html")
-
-@app.route("/signup", methods=["POST"])
-def signup():
-    username = request.form["username"]
-    email = request.form["email"]
-
-    # Check for existing email or username
-    if db.users.find_one({"email": email}):
-        return "Email already registered! <a href='/signup_page'>Try again</a>"
-    if db.users.find_one({"username": username}):
-        return "Username already taken! <a href='/signup_page'>Try again</a>"
-
-    password = bcrypt.generate_password_hash(request.form["password"]).decode("utf-8")
-    currency = request.form.get("currency", "₹")
-
-    db.users.insert_one({
-        "username": username,
-        "email": email,
-        "password": password,
-        "budget": 0,
-        "currency": currency
-    })
-    return redirect(url_for("login_page"))
-
-@app.route("/login", methods=["POST"])
-def login():
-    email = request.form["email"]
-    password = request.form["password"]
     user = db.users.find_one({"email": email})
+    if not user:
+        db.users.insert_one({
+            "username": username,
+            "email": email,
+            "budget": 0,
+            "currency": "₹"
+        })
+        user = db.users.find_one({"email": email})
 
-    if user and bcrypt.check_password_hash(user["password"], password):
-        session["user_id"] = str(user["_id"])
-        session["username"] = user["username"]
-        return redirect(url_for("dashboard"))
-    return "Invalid credentials! <a href='/login_page'>Try again</a>"
+    session["user_id"] = str(user["_id"])
+    session["username"] = user["username"]
+    return jsonify({"success": True})
 
+# Logout
 @app.route("/logout")
 def logout():
     session.clear()
@@ -151,12 +139,11 @@ def dashboard():
 
     user = db.users.find_one({"_id": ObjectId(user_id)})
     if not user:
-     session.clear()
-     return redirect(url_for("login_page"))
+        session.clear()
+        return redirect(url_for("login_page"))
 
     budget = user.get("budget", 0)
     currency = user.get("currency", "₹")
-
 
     notifications = []
     if budget > 0:
@@ -229,6 +216,8 @@ def export_csv():
 
     return Response(generate(), mimetype='text/csv',
                     headers={"Content-Disposition": "attachment;filename=expenses.csv"})
+
+# ---------------- AI Chat ---------------- #
 
 # ---------------- Run App ---------------- #
 if __name__ == "__main__":

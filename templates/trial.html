@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Expense Tracker</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      padding: 2rem;
+      background: #fff;
+      width: 100%;
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2 class="text-center mb-4">Welcome Back</h2>
+    <div id="clerk-sign-in"></div>
+  </div>
+
+  <!-- Clerk JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+  <script>
+    // Initialize Clerk
+    const clerk = window.Clerk;
+
+    clerk.load({
+      frontendApi: "https://useful-glowworm-86.clerk.accounts.dev"
+    });
+
+    // Mount Sign In Widget
+    clerk.mountSignIn('#clerk-sign-in', {
+      afterSignInUrl: "/dashboard"
+    });
+  </script>
+
+</body>
+</html>
